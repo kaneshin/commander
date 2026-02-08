@@ -1,0 +1,153 @@
+openapi: 3.1.0
+info:
+  title: commander
+  version: 1.0.0
+  description: >-
+    A Hono + Vite server that manages an in-memory LIFO stack of shell
+    commands. Push commands onto the stack via HTTP, then pop and execute
+    them on demand.
+
+servers:
+  - url: http://localhost:3333
+    description: Local development server
+
+security: []
+
+paths:
+  /commands:
+    get:
+      summary: List all commands on the stack
+      operationId: listCommands
+      responses:
+        "200":
+          description: Current stack contents
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommandList"
+
+    post:
+      summary: Push a shell command onto the stack
+      operationId: pushCommand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommandPush"
+      responses:
+        "201":
+          description: Command pushed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommandPushResponse"
+        "400":
+          description: Missing or non-string command field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /commands/execute:
+    post:
+      summary: Pop the most recent command and execute it
+      operationId: executeCommand
+      responses:
+        "200":
+          description: Command executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecuteResult"
+        "404":
+          description: Stack is empty
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Command exited with non-zero status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecuteError"
+
+components:
+  schemas:
+    CommandList:
+      type: object
+      required:
+        - commands
+        - size
+      properties:
+        commands:
+          type: array
+          items:
+            type: string
+          description: All commands currently on the stack
+        size:
+          type: integer
+          description: Number of commands on the stack
+
+    CommandPush:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          minLength: 1
+          description: Shell command to push onto the stack
+
+    CommandPushResponse:
+      type: object
+      required:
+        - message
+        - size
+      properties:
+        message:
+          type: string
+          description: Confirmation message
+        size:
+          type: integer
+          description: Stack size after push
+
+    ExecuteResult:
+      type: object
+      required:
+        - command
+        - stdout
+        - stderr
+      properties:
+        command:
+          type: string
+          description: The command that was executed
+        stdout:
+          type: string
+          description: Standard output of the command
+        stderr:
+          type: string
+          description: Standard error of the command
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+
+    ExecuteError:
+      type: object
+      required:
+        - error
+        - command
+      properties:
+        error:
+          type: string
+          description: Error message
+        command:
+          type: string
+          description: The command that failed
