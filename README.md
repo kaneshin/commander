@@ -55,6 +55,12 @@ Push a shell command onto the stack.
 
 **Error** `400` — missing or non-string `command` field.
 
+### `DELETE /commands`
+
+Clear all commands from the stack.
+
+**Response** `204` No Content
+
 ### `POST /commands/execute`
 
 Pop the most recent command from the stack and execute it.
@@ -87,6 +93,9 @@ curl http://localhost:3333/commands
 
 # Execute — pops "ls" first (LIFO)
 curl -X POST http://localhost:3333/commands/execute
+
+# Clear all commands
+curl -X DELETE http://localhost:3333/commands
 ```
 
 ## Project Structure
