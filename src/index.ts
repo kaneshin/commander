@@ -1,11 +1,16 @@
 import { Hono } from "hono";
-import { push, pop, size, list } from "./stack.js";
+import { push, pop, size, list, clear } from "./stack.js";
 import { execute } from "./executor.js";
 
 const app = new Hono();
 
 app.get("/commands", (c) => {
   return c.json({ commands: list(), size: size() });
+});
+
+app.delete("/commands", (c) => {
+  clear();
+  return c.body(null, 204);
 });
 
 app.post("/commands", async (c) => {

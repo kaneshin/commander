@@ -49,6 +49,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+    delete:
+      summary: Clear all commands from the stack
+      operationId: clearCommands
+      responses:
+        "204":
+          description: Stack cleared successfully
+
   /commands/execute:
     post:
       summary: Pop the most recent command and execute it

@@ -92,6 +92,39 @@ describe("POST /commands/execute", () => {
   });
 });
 
+describe("DELETE /commands", () => {
+  beforeEach(() => {
+    clear();
+  });
+
+  it("returns 204 when stack is empty", async () => {
+    const res = await app.request("/commands", { method: "DELETE" });
+    expect(res.status).toBe(204);
+    expect(res.body).toBeNull();
+  });
+
+  it("clears all commands and returns 204", async () => {
+    await app.request("/commands", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: "echo first" }),
+    });
+    await app.request("/commands", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: "echo second" }),
+    });
+
+    const res = await app.request("/commands", { method: "DELETE" });
+    expect(res.status).toBe(204);
+    expect(res.body).toBeNull();
+
+    const listRes = await app.request("/commands");
+    const body = await listRes.json();
+    expect(body).toEqual({ commands: [], size: 0 });
+  });
+});
+
 describe("GET /commands", () => {
   beforeEach(() => {
     clear();
